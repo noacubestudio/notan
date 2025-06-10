@@ -81,19 +81,23 @@ window.addEventListener('pointercancel', (e) => {
 function pressedButton(el) {
     if (el.innerText === 'draw') {
         el.innerText = 'erase';
-        el.style.outlineColor = 'salmon';
+        el.style.backgroundColor = 'white';
+        el.style.color = 'black';
         isErasing = true;
     } else if (el.innerText === 'erase') {
         el.innerText = 'draw';
-        el.style.outlineColor = 'white';
+        el.style.backgroundColor = 'transparent';
+        el.style.color = 'white';
         isErasing = false;
     } else if (el.innerText === 'line') {
         el.innerText = 'shape';
-        el.style.outlineColor = 'white';
+        el.style.backgroundColor = 'transparent';
+        el.style.color = 'white';
         isLine = false;
     } else if (el.innerText === 'shape') {
         el.innerText = 'line';
-        el.style.outlineColor = 'cyan';
+        el.style.backgroundColor = 'white';
+        el.style.color = 'black';
         isLine = true;
     } else if (el.innerText === 'undo') {
         stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
@@ -153,22 +157,16 @@ function draw_line(ctx) {
 }
 
 function draw_ui(ctx) {
-    //// right side
-    //ctx.fillStyle = isLine ? '#aaa' : 'gray';
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = '#864';
     ctx.fillRect(0, 0, display_canvas.width, display_canvas.height);
-    //// left side
-    //ctx.fillStyle = isErasing ? '#aaa' : 'gray';
-    //ctx.fillRect(0, 0, display_canvas.width / 2, display_canvas.height);
 
     const {x: paintingX, y: paintingY} = paintingToDisplay({x: 0, y: 0});
     ctx.drawImage(main_canvas, paintingX, paintingY);
     ctx.drawImage(stroke_canvas, paintingX, paintingY);
 
-    //ctx.fillStyle = 'white';
-    //ctx.font = '32px Serif';
-    //const text_content = 'You can ' + (isErasing ? 'erase' : 'draw') + (isLine ? ' lines' : ' shapes');
-    //ctx.fillText(text_content, 15, 40);
+    // border around the painting area
+    //ctx.strokeStyle = 'white';
+    //ctx.strokeRect(paintingX, paintingY, main_canvas.width, main_canvas.height);
 }
 
 draw_ui(display_ctx);
