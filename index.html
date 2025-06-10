@@ -14,10 +14,41 @@
             background-color: transparent;
             touch-action: none; /* Prevent default touch actions */
         }
+        #top-menu {
+            position: absolute;
+            padding: 10px 16px;
+            font-size: 32px;
+            color: white;
+            user-select: none;
+        }
+        #top-menu button {
+            box-sizing: border-box;
+            touch-action: none;
+            background-color: transparent;
+            border: none;
+            outline: white 1px solid;
+            color: white;
+            font-size: inherit;
+            font-family: inherit;
+            min-width: 2.6em;
+            line-height: 0;
+            padding: 0.8em 0.05em;
+            margin: 0 0.1em;
+        }
+        #top-menu button:hover {
+            outline-width: 3px;
+        }
     </style>
 </head>
 <body>
     <canvas id="display-canvas"></canvas>
+    <div id="top-menu">
+        You can
+        <button onclick="pressedButton(this)">draw</button>
+        a <button onclick="pressedButton(this)">shape</button>
+        or <button onclick="pressedButton(this)">undo</button>
+        or <button onclick="pressedButton(this)">save</button>.
+    </div>
     <script src="main.js"></script>
 </body>
 </html>

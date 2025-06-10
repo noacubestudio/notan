@@ -32,13 +32,13 @@ let points = [];
 let isDrawing = false;
 let isErasing = false;
 let isLine = false;
-let partInsidePainting = false;
+// let partInsidePainting = false;
 
 // fixed settings for drawing
 stroke_ctx.lineWidth = 2;
 stroke_ctx.lineJoin = 'round';
 
-window.addEventListener('pointerdown', (e) => {
+display_canvas.addEventListener('pointerdown', (e) => {
     points = [];
 
     // apply last stroke to main canvas
@@ -54,40 +54,61 @@ window.addEventListener('pointerdown', (e) => {
         stroke_ctx.fillStyle = 'black';
     }
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
-    partInsidePainting = insidePainting({x, y});
     points.push(new Point(x, y));
 
     draw_ui(display_ctx);
 });
-window.addEventListener('pointermove', (e) => {
+display_canvas.addEventListener('pointermove', (e) => {
     if (!isDrawing) return;
     stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
 
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
     points.push(new Point(x, y));
-    partInsidePainting = partInsidePainting || insidePainting({x, y});
 
     draw_stroke(stroke_ctx);
     draw_ui(display_ctx);
 });
-window.addEventListener('pointerup', (e) => {
+display_canvas.addEventListener('pointerup', (e) => {
     if (!isDrawing) return;
     isDrawing = false;
-    if (!partInsidePainting) {
-        const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
-        const leftSide = x < main_canvas.width / 2;
-        if (leftSide) {
-            isErasing = !isErasing; // toggle erasing mode
-        } else {
-            isLine = !isLine; // toggle line mode
-        }
-    }
     draw_ui(display_ctx);
 });
 window.addEventListener('pointercancel', (e) => {
     isDrawing = false;
     draw_ui(display_ctx);
 });
+
+function pressedButton(el) {
+    if (el.innerText === 'draw') {
+        el.innerText = 'erase';
+        el.style.outlineColor = 'salmon';
+        isErasing = true;
+    } else if (el.innerText === 'erase') {
+        el.innerText = 'draw';
+        el.style.outlineColor = 'white';
+        isErasing = false;
+    } else if (el.innerText === 'line') {
+        el.innerText = 'shape';
+        el.style.outlineColor = 'white';
+        isLine = false;
+    } else if (el.innerText === 'shape') {
+        el.innerText = 'line';
+        el.style.outlineColor = 'cyan';
+        isLine = true;
+    } else if (el.innerText === 'undo') {
+        stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
+        draw_ui(display_ctx);
+    } else if (el.innerText === 'save') {
+        // open just the main canvas in a new tab
+        const dataURL = main_canvas.toDataURL('image/png');
+        const newTab = window.open();
+        if (newTab) {
+            newTab.document.body.innerHTML = `<img src="${dataURL}" alt="Drawing">`;
+        } else {
+            alert('Please allow popups for this website to save the drawing.');
+        }
+    }
+}
 
 function draw_stroke(ctx) {
     if (!isLine) {
@@ -132,21 +153,22 @@ function draw_line(ctx) {
 }
 
 function draw_ui(ctx) {
-    // right side
-    ctx.fillStyle = isLine ? '#aaa' : 'gray';
+    //// right side
+    //ctx.fillStyle = isLine ? '#aaa' : 'gray';
+    ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, display_canvas.width, display_canvas.height);
-    // left side
-    ctx.fillStyle = isErasing ? '#aaa' : 'gray';
-    ctx.fillRect(0, 0, display_canvas.width / 2, display_canvas.height);
+    //// left side
+    //ctx.fillStyle = isErasing ? '#aaa' : 'gray';
+    //ctx.fillRect(0, 0, display_canvas.width / 2, display_canvas.height);
 
     const {x: paintingX, y: paintingY} = paintingToDisplay({x: 0, y: 0});
     ctx.drawImage(main_canvas, paintingX, paintingY);
     ctx.drawImage(stroke_canvas, paintingX, paintingY);
 
-    ctx.fillStyle = 'white';
-    ctx.font = '32px Serif';
-    const text_content = 'You can ' + (isErasing ? 'erase' : 'draw') + (isLine ? ' lines' : ' shapes');
-    ctx.fillText(text_content, 15, 40);
+    //ctx.fillStyle = 'white';
+    //ctx.font = '32px Serif';
+    //const text_content = 'You can ' + (isErasing ? 'erase' : 'draw') + (isLine ? ' lines' : ' shapes');
+    //ctx.fillText(text_content, 15, 40);
 }
 
 draw_ui(display_ctx);
