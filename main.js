@@ -21,6 +21,7 @@ main_ctx.fillRect(0, 0, main_canvas.width, main_canvas.height);
 
 const displayToPainting = ({x, y}) => {return {x: x - 100, y: y - 100};};
 const paintingToDisplay = ({x, y}) => {return {x: x + 100, y: y + 100};};
+const insidePainting = ({x, y}) => {return (x >= 0 && x < main_canvas.width && y >= 0 && y < main_canvas.height);};
 
 const stroke_canvas = document.createElement('canvas');
 const stroke_ctx = stroke_canvas.getContext('2d');
@@ -31,6 +32,7 @@ let points = [];
 let isDrawing = false;
 let isErasing = false;
 let isLine = false;
+let partInsidePainting = false;
 
 // fixed settings for drawing
 stroke_ctx.lineWidth = 2;
@@ -52,7 +54,9 @@ window.addEventListener('pointerdown', (e) => {
         stroke_ctx.fillStyle = 'black';
     }
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
+    partInsidePainting = insidePainting({x, y});
     points.push(new Point(x, y));
+
     draw_ui(display_ctx);
 });
 window.addEventListener('pointermove', (e) => {
@@ -61,13 +65,23 @@ window.addEventListener('pointermove', (e) => {
 
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
     points.push(new Point(x, y));
-    draw_stroke(e, stroke_ctx);
+    partInsidePainting = partInsidePainting || insidePainting({x, y});
+
+    draw_stroke(stroke_ctx);
     draw_ui(display_ctx);
 });
 window.addEventListener('pointerup', (e) => {
     if (!isDrawing) return;
     isDrawing = false;
-    if (!isLine) isErasing = !isErasing;
+    if (!partInsidePainting) {
+        const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
+        const leftSide = x < main_canvas.width / 2;
+        if (leftSide) {
+            isErasing = !isErasing; // toggle erasing mode
+        } else {
+            isLine = !isLine; // toggle line mode
+        }
+    }
     draw_ui(display_ctx);
 });
 window.addEventListener('pointercancel', (e) => {
@@ -75,21 +89,12 @@ window.addEventListener('pointercancel', (e) => {
     draw_ui(display_ctx);
 });
 
-function draw_stroke(e, ctx) {
-    // get altitude angle
-    if (e.pointerType === 'pen') {
-        const altitudeAngle = e.altitudeAngle || 0; // in radians, 0 means flat
-        const altitudeFactor = Math.cos(altitudeAngle);
-        isLine = (altitudeFactor < 0.6);
-        
-        if (!isLine) {
-            draw_fan(ctx);
-            return;
-        }
-        draw_line(ctx);
+function draw_stroke(ctx) {
+    if (!isLine) {
+        draw_fan(ctx);
         return;
     }
-    draw_lasso(ctx);
+    draw_line(ctx);
 }
 
 function draw_lasso(ctx) {
@@ -127,15 +132,21 @@ function draw_line(ctx) {
 }
 
 function draw_ui(ctx) {
-    ctx.fillStyle = (isErasing) ? 'pink' : 'lightblue';
+    // right side
+    ctx.fillStyle = isLine ? '#aaa' : 'gray';
     ctx.fillRect(0, 0, display_canvas.width, display_canvas.height);
+    // left side
+    ctx.fillStyle = isErasing ? '#aaa' : 'gray';
+    ctx.fillRect(0, 0, display_canvas.width / 2, display_canvas.height);
+
     const {x: paintingX, y: paintingY} = paintingToDisplay({x: 0, y: 0});
     ctx.drawImage(main_canvas, paintingX, paintingY);
     ctx.drawImage(stroke_canvas, paintingX, paintingY);
 
     ctx.fillStyle = 'white';
     ctx.font = '32px Serif';
-    ctx.fillText(isErasing ? 'You Can Erase' : 'You Can Draw', 15, 40);
+    const text_content = 'You can ' + (isErasing ? 'erase' : 'draw') + (isLine ? ' lines' : ' shapes');
+    ctx.fillText(text_content, 15, 40);
 }
 
 draw_ui(display_ctx);
