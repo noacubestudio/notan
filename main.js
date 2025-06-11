@@ -106,6 +106,9 @@ function pressedButton(el) {
         stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
         draw_ui(display_ctx);
     } else if (el.innerText === 'save') {
+        // apply last stroke to main canvas
+        main_ctx.drawImage(stroke_canvas, 0, 0);
+        stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
         // open just the main canvas in a new tab
         const dataURL = main_canvas.toDataURL('image/png');
         const newTab = window.open();
