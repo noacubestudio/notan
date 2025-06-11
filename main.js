@@ -1,7 +1,8 @@
 class Point {
-    constructor(x, y) {
+    constructor(x, y, pressure) {
         this.x = x;
         this.y = y;
+        this.pressure = pressure || null;
     }
 }
 
@@ -37,6 +38,7 @@ let isLine = false;
 // fixed settings for drawing
 stroke_ctx.lineWidth = 2;
 stroke_ctx.lineJoin = 'round';
+stroke_ctx.lineCap = 'round';
 
 display_canvas.addEventListener('pointerdown', (e) => {
     points = [];
@@ -60,10 +62,10 @@ display_canvas.addEventListener('pointerdown', (e) => {
 });
 display_canvas.addEventListener('pointermove', (e) => {
     if (!isDrawing) return;
-    stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
+    //stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
 
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
-    points.push(new Point(x, y));
+    points.push(new Point(x, y, pressure = e.pressure));
 
     draw_stroke(stroke_ctx);
     draw_ui(display_ctx);
@@ -136,24 +138,48 @@ function draw_lasso(ctx) {
 
 function draw_fan(ctx) {
     if (points.length < 2) return;
-    for (let i = 1; i < points.length; i++) {
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        ctx.lineTo(points[i-1].x, points[i-1].y);
-        ctx.lineTo(points[i].x, points[i].y);
-        ctx.fill();
-        ctx.stroke();
-    }
+
+    // for (let i = 1; i < points.length; i++) {
+    //     ctx.beginPath();
+    //     ctx.moveTo(points[0].x, points[0].y);
+    //     ctx.lineTo(points[i-1].x, points[i-1].y);
+    //     ctx.lineTo(points[i].x, points[i].y);
+    //     ctx.fill();
+    //     ctx.stroke();
+    // }
+
+    // only draw the last points, assuming no refreshing of the canvas
+    const i = points.length - 1;
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    ctx.lineTo(points[i-1].x, points[i-1].y);
+    ctx.lineTo(points[i].x, points[i].y);
+    ctx.fill();
+    ctx.stroke();
 }
 
 function draw_line(ctx) {
     if (points.length < 2) return;
+
+    // ctx.beginPath();
+    // ctx.moveTo(points[0].x, points[0].y);
+    // for (let i = 1; i < points.length; i++) {
+    //     ctx.lineTo(points[i].x, points[i].y);
+    // }
+    // ctx.stroke();
+
+    // only draw the last points, assuming no refreshing of the canvas
+    const i = points.length - 1;
+    const changedPressure = Math.abs(points[i].pressure - points[i-1].pressure);
+    console.log(`Changed pressure: ${changedPressure}, Current pressure: ${points[i].pressure}`);
+    const setWidth = (changedPressure !== 0 && changedPressure !== 0.5) ? points[i].pressure * 10 || 2 : 2;
+    const randomness = Math.random() * 0.4 - 0.2; // add some randomness to the line width
+    stroke_ctx.lineWidth = setWidth + randomness; // use pressure for line width, default to 2
     ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
-    }
+    ctx.moveTo(points[i-1].x, points[i-1].y);
+    ctx.lineTo(points[i].x, points[i].y);
     ctx.stroke();
+    stroke_ctx.lineWidth = 2;
 }
 
 function draw_ui(ctx) {
