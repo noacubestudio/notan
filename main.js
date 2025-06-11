@@ -9,36 +9,58 @@ class Point {
 // display the main and stroke canvases in here, plus any overlays
 const display_canvas = document.getElementById('display-canvas');
 const display_ctx = display_canvas.getContext('2d');
-display_canvas.width = window.innerWidth;
-display_canvas.height = window.innerHeight;
 display_canvas.imageSmoothingEnabled = false;
 
+// main canvas for the painting area
 const main_canvas = document.createElement('canvas');
 const main_ctx = main_canvas.getContext('2d');
-main_canvas.width = display_canvas.width - 200;
-main_canvas.height = display_canvas.height - 200;
-main_ctx.fillStyle = 'white';
-main_ctx.fillRect(0, 0, main_canvas.width, main_canvas.height);
-
-const displayToPainting = ({x, y}) => {return {x: x - 100, y: y - 100};};
-const paintingToDisplay = ({x, y}) => {return {x: x + 100, y: y + 100};};
+let padding_h = 100;
+let padding_v = 100;
+const displayToPainting = ({x, y}) => {return {x: x - padding_h, y: y - padding_v};};
+const paintingToDisplay = ({x, y}) => {return {x: x + padding_h, y: y + padding_v};};
 const insidePainting = ({x, y}) => {return (x >= 0 && x < main_canvas.width && y >= 0 && y < main_canvas.height);};
 
+// rendered on top of the main canvas, used for current stroke
 const stroke_canvas = document.createElement('canvas');
 const stroke_ctx = stroke_canvas.getContext('2d');
-stroke_canvas.width = main_canvas.width;
-stroke_canvas.height = main_canvas.height;
 
+function resize_painting() {
+    display_canvas.width = Math.floor(window.innerWidth);
+    display_canvas.height = Math.floor(window.innerHeight);
+    display_canvas.style.width = `${display_canvas.width}px`;
+    display_canvas.style.height = `${display_canvas.height}px`;
+    
+    padding_h = display_canvas.width > 600 ? 64 : 16;
+    padding_v = display_canvas.width > 600 ? 84 : 48;
+    main_canvas.width = display_canvas.width - padding_h * 2;
+    main_canvas.height = display_canvas.height - padding_v * 2;
+
+    main_ctx.fillStyle = 'white';
+    main_ctx.fillRect(0, 0, main_canvas.width, main_canvas.height);
+
+    stroke_canvas.width = main_canvas.width;
+    stroke_canvas.height = main_canvas.height;
+}
+resize_painting(); // initial size
+
+// state for drawing
 let points = [];
 let isDrawing = false;
 let isErasing = false;
 let isLine = false;
-// let partInsidePainting = false;
 
-// fixed settings for drawing
+// initial drawing
 stroke_ctx.lineWidth = 2;
 stroke_ctx.lineJoin = 'round';
 stroke_ctx.lineCap = 'round';
+
+
+// events
+
+window.addEventListener('resize', () => {
+    resize_painting();
+    draw_ui(display_ctx);
+});
 
 display_canvas.addEventListener('pointerdown', (e) => {
     points = [];
@@ -203,10 +225,6 @@ function draw_ui(ctx) {
     const {x: paintingX, y: paintingY} = paintingToDisplay({x: 0, y: 0});
     ctx.drawImage(main_canvas, paintingX, paintingY);
     ctx.drawImage(stroke_canvas, paintingX, paintingY);
-
-    // border around the painting area
-    //ctx.strokeStyle = 'white';
-    //ctx.strokeRect(paintingX, paintingY, main_canvas.width, main_canvas.height);
 }
 
 draw_ui(display_ctx);
