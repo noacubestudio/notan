@@ -81,6 +81,18 @@ window.addEventListener('pointercancel', (e) => {
     draw_ui(display_ctx);
 });
 
+document.addEventListener('keydown', (e) => {
+    if (e.key === '1') {
+        pressedButton(document.getElementById('button-color'));
+    } else if (e.key === '2') {
+        pressedButton(document.getElementById('button-tool'));
+    } else if (e.key === '3') {
+        pressedButton(document.getElementById('button-undo'));
+    } else if (e.key === '4') {
+        pressedButton(document.getElementById('button-save'));
+    }
+});
+
 function pressedButton(el) {
     if (el.innerText === 'draw') {
         el.innerText = 'erase';

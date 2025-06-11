@@ -43,11 +43,10 @@
 <body>
     <canvas id="display-canvas"></canvas>
     <div id="top-menu">
-        You can
-        <button onclick="pressedButton(this)">draw</button>
-        a <button onclick="pressedButton(this)">shape</button>
-        or <button onclick="pressedButton(this)">undo</button>
-        or <button onclick="pressedButton(this)">save</button>.
+        You can <button onclick="pressedButton(this)" id="button-color">draw</button>
+        a       <button onclick="pressedButton(this)" id="button-tool">shape</button>
+        or      <button onclick="pressedButton(this)" id="button-undo">undo</button>
+        or      <button onclick="pressedButton(this)" id="button-save">save</button>.
     </div>
     <script src="main.js"></script>
 </body>
