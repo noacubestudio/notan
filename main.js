@@ -48,6 +48,7 @@ let points = [];
 let isDrawing = false;
 let isErasing = false;
 let isLine = false;
+let empty_canvas = true;
 
 // initial drawing
 stroke_ctx.lineWidth = 2;
@@ -64,7 +65,6 @@ window.addEventListener('resize', () => {
 
 display_canvas.addEventListener('pointerdown', (e) => {
     points = [];
-
     // apply last stroke to main canvas
     main_ctx.drawImage(stroke_canvas, 0, 0);
     stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
@@ -77,12 +77,10 @@ display_canvas.addEventListener('pointerdown', (e) => {
 
     draw_ui(display_ctx);
 });
-display_canvas.addEventListener('pointermove', (e) => {
+window.addEventListener('pointermove', (e) => {
     if (!isDrawing) return;
     
     // only draw the last part
-    // not: stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
-
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
     const pressure = (e.pointerType === 'mouse') ? null : e.pressure;
     points.push(new Point(x, y, pressure));
@@ -90,8 +88,12 @@ display_canvas.addEventListener('pointermove', (e) => {
     draw_stroke(stroke_ctx);
     draw_ui(display_ctx);
 });
-display_canvas.addEventListener('pointerup', (e) => {
+window.addEventListener('pointerup', (e) => {
     if (!isDrawing) return;
+    if (empty_canvas) {
+        empty_canvas = false;
+        document.getElementById('button-save').innerText = 'save';
+    }
     isDrawing = false;
     draw_ui(display_ctx);
 });
@@ -151,6 +153,29 @@ function pressedButton(el) {
         } else {
             alert('Please allow popups for this website to save the drawing.');
         }
+    } else if (el.innerText === 'load') {
+        // load from png
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/png';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+
+                    // success
+                    main_ctx.drawImage(img, 0, 0);
+                    draw_ui(display_ctx);
+                    el.innerText = 'save';
+                }
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        input.click();
     }
 }
 
@@ -187,15 +212,6 @@ function draw_lasso(ctx) {
 function draw_fan(ctx) {
     if (points.length < 2) return;
 
-    // for (let i = 1; i < points.length; i++) {
-    //     ctx.beginPath();
-    //     ctx.moveTo(points[0].x, points[0].y);
-    //     ctx.lineTo(points[i-1].x, points[i-1].y);
-    //     ctx.lineTo(points[i].x, points[i].y);
-    //     ctx.fill();
-    //     ctx.stroke();
-    // }
-
     // only draw the last points, assuming no refreshing of the canvas
     const i = points.length - 1;
     ctx.beginPath();
@@ -209,23 +225,16 @@ function draw_fan(ctx) {
 function draw_line(ctx) {
     if (points.length < 2) return;
 
-    // ctx.beginPath();
-    // ctx.moveTo(points[0].x, points[0].y);
-    // for (let i = 1; i < points.length; i++) {
-    //     ctx.lineTo(points[i].x, points[i].y);
-    // }
-    // ctx.stroke();
-
     // only draw the last points, assuming no refreshing of the canvas
     const i = points.length - 1;
     const pressure = points[i].pressure || points[i-1].pressure || 0.2;
-    const randomness = 1 + Math.random() * 0.4 - 0.2; // add some randomness to the line width
-    stroke_ctx.lineWidth = pressure * 10;
+    // const randomness = 1 + Math.random() * 0.4 - 0.2; // add some randomness to the line width
+    ctx.lineWidth = pressure * 10;
     ctx.beginPath();
     ctx.moveTo(points[i-1].x, points[i-1].y);
     ctx.lineTo(points[i].x, points[i].y);
     ctx.stroke();
-    stroke_ctx.lineWidth = 2;
+    ctx.lineWidth = 2;
 }
 
 function draw_ui(ctx) {
