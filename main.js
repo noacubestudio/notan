@@ -127,13 +127,13 @@ function pressedButton(el) {
         el.style.color = 'white';
         isErasing = false;
         set_color(stroke_ctx, isErasing);
-    } else if (el.innerText === 'line') {
-        el.innerText = 'shape';
+    } else if (el.innerText === 'lines') {
+        el.innerText = 'shapes';
         el.style.backgroundColor = 'transparent';
         el.style.color = 'white';
         isLine = false;
-    } else if (el.innerText === 'shape') {
-        el.innerText = 'line';
+    } else if (el.innerText === 'shapes') {
+        el.innerText = 'lines';
         el.style.backgroundColor = 'white';
         el.style.color = 'black';
         isLine = true;

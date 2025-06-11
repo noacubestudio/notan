@@ -27,7 +27,7 @@
             padding: 16px;
             margin-left: 13px;
             font-size: 32px;
-            color: white;
+            color: rgba(255, 255, 255, 0.5);
             user-select: none;
         }
         #top-menu button {
@@ -39,10 +39,8 @@
             color: white;
             font-size: inherit;
             font-family: inherit;
-            min-width: 2.6em;
             line-height: 0;
-            padding: 0.8em 0.05em;
-            /* margin: 0 0.1em; */
+            padding: 0.8em 0.15em;
         }
         #top-menu button:hover {
             outline-width: 2px;
@@ -61,10 +59,10 @@
 <body>
     <canvas id="display-canvas"></canvas>
     <div id="top-menu">
-        ◒ <button onclick="pressedButton(this)" id="button-color">draw</button>
-        a  <button onclick="pressedButton(this)" id="button-tool">shape</button> below,
-           <button onclick="pressedButton(this)" id="button-undo">undo</button>
-        or <button onclick="pressedButton(this)" id="button-save">load</button>
+        You can <button onclick="pressedButton(this)" id="button-color" style="min-width: 2.4em">draw</button>
+        <button onclick="pressedButton(this)" id="button-tool" style="min-width: 3em">shapes</button>
+        or <button onclick="pressedButton(this)" id="button-undo">undo</button>
+        or <button onclick="pressedButton(this)" id="button-save">load</button> .
     </div>
     <script src="main.js"></script>
 </body>
