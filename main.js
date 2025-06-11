@@ -70,13 +70,7 @@ display_canvas.addEventListener('pointerdown', (e) => {
     stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
 
     isDrawing = true;
-    if (isErasing) {
-        stroke_ctx.strokeStyle = 'white';
-        stroke_ctx.fillStyle = 'white';
-    } else {
-        stroke_ctx.strokeStyle = 'black';
-        stroke_ctx.fillStyle = 'black';
-    }
+    set_color(stroke_ctx, isErasing);
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
     points.push(new Point(x, y));
 
@@ -121,11 +115,13 @@ function pressedButton(el) {
         el.style.backgroundColor = 'white';
         el.style.color = 'black';
         isErasing = true;
+        set_color(stroke_ctx, isErasing);
     } else if (el.innerText === 'erase') {
         el.innerText = 'draw';
         el.style.backgroundColor = 'transparent';
         el.style.color = 'white';
         isErasing = false;
+        set_color(stroke_ctx, isErasing);
     } else if (el.innerText === 'line') {
         el.innerText = 'shape';
         el.style.backgroundColor = 'transparent';
@@ -140,6 +136,7 @@ function pressedButton(el) {
         stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
         draw_ui(display_ctx);
     } else if (el.innerText === 'save') {
+        if (isDrawing) return;
         // apply last stroke to main canvas
         main_ctx.drawImage(stroke_canvas, 0, 0);
         stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
@@ -151,6 +148,16 @@ function pressedButton(el) {
         } else {
             alert('Please allow popups for this website to save the drawing.');
         }
+    }
+}
+
+function set_color(ctx, isErasing) {
+    if (isErasing) {
+        ctx.strokeStyle = 'white';
+        ctx.fillStyle = 'white';
+    } else {
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle = 'black';
     }
 }
 
