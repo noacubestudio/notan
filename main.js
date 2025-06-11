@@ -65,7 +65,8 @@ display_canvas.addEventListener('pointermove', (e) => {
     //stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
 
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
-    points.push(new Point(x, y, pressure = e.pressure));
+    const pressure = (e.pointerType === 'mouse') ? null : e.pressure;
+    points.push(new Point(x, y, pressure));
 
     draw_stroke(stroke_ctx);
     draw_ui(display_ctx);
@@ -170,9 +171,7 @@ function draw_line(ctx) {
 
     // only draw the last points, assuming no refreshing of the canvas
     const i = points.length - 1;
-    const changedPressure = Math.abs(points[i].pressure - points[i-1].pressure);
-    console.log(`Changed pressure: ${changedPressure}, Current pressure: ${points[i].pressure}`);
-    const setWidth = (changedPressure !== 0 && changedPressure !== 0.5) ? points[i].pressure * 10 || 2 : 2;
+    const setWidth = points[i].pressure * 10 || 2;
     const randomness = Math.random() * 0.4 - 0.2; // add some randomness to the line width
     stroke_ctx.lineWidth = setWidth + randomness; // use pressure for line width, default to 2
     ctx.beginPath();
