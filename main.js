@@ -72,13 +72,16 @@ display_canvas.addEventListener('pointerdown', (e) => {
     isDrawing = true;
     set_color(stroke_ctx, isErasing);
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
-    points.push(new Point(x, y));
+    const pressure = (e.pointerType === 'mouse') ? null : e.pressure;
+    points.push(new Point(x, y, pressure));
 
     draw_ui(display_ctx);
 });
 display_canvas.addEventListener('pointermove', (e) => {
     if (!isDrawing) return;
-    //stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
+    
+    // only draw the last part
+    // not: stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
 
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
     const pressure = (e.pointerType === 'mouse') ? null : e.pressure;
@@ -215,9 +218,9 @@ function draw_line(ctx) {
 
     // only draw the last points, assuming no refreshing of the canvas
     const i = points.length - 1;
-    const setWidth = points[i].pressure * 10 || 2;
-    const randomness = Math.random() * 0.4 - 0.2; // add some randomness to the line width
-    stroke_ctx.lineWidth = setWidth + randomness; // use pressure for line width, default to 2
+    const pressure = points[i].pressure || points[i-1].pressure || 0.2;
+    const randomness = 1 + Math.random() * 0.4 - 0.2; // add some randomness to the line width
+    stroke_ctx.lineWidth = pressure * 10;
     ctx.beginPath();
     ctx.moveTo(points[i-1].x, points[i-1].y);
     ctx.lineTo(points[i].x, points[i].y);
