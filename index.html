@@ -25,6 +25,7 @@
             overflow-x: auto;
             max-width: calc(100% - 32px);
             padding: 16px;
+            margin-left: 13px;
             font-size: 32px;
             color: white;
             user-select: none;
@@ -41,7 +42,7 @@
             min-width: 2.6em;
             line-height: 0;
             padding: 0.8em 0.05em;
-            margin: 0 0.1em;
+            /* margin: 0 0.1em; */
         }
         #top-menu button:hover {
             outline-width: 2px;
@@ -52,6 +53,7 @@
                 font-size: 20px;
                 width: calc(100% - 16px);
                 padding: 8px;
+                margin-left: 5px;
             }
         }
     </style>
@@ -59,10 +61,10 @@
 <body>
     <canvas id="display-canvas"></canvas>
     <div id="top-menu">
-        Now, <button onclick="pressedButton(this)" id="button-color">draw</button>
-        a    <button onclick="pressedButton(this)" id="button-tool">shape</button> <span style="vertical-align: -0.4em; line-height: 0;">⮧</span>,
-             <button onclick="pressedButton(this)" id="button-undo">undo</button>
-        or   <button onclick="pressedButton(this)" id="button-save">load</button>.
+        ◒ <button onclick="pressedButton(this)" id="button-color">draw</button>
+        a  <button onclick="pressedButton(this)" id="button-tool">shape</button> below,
+           <button onclick="pressedButton(this)" id="button-undo">undo</button>
+        or <button onclick="pressedButton(this)" id="button-save">load</button>
     </div>
     <script src="main.js"></script>
 </body>
