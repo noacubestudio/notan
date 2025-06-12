@@ -14,6 +14,7 @@ display_canvas.imageSmoothingEnabled = false;
 // main canvas for the painting area
 const main_canvas = document.createElement('canvas');
 const main_ctx = main_canvas.getContext('2d');
+main_ctx.imageSmoothingEnabled = false;
 let padding_h = 100;
 let padding_v = 100;
 const displayToPainting = ({x, y}) => {return {x: x - padding_h, y: y - padding_v};};
@@ -23,47 +24,56 @@ const insidePainting = ({x, y}) => {return (x >= 0 && x < main_canvas.width && y
 // rendered on top of the main canvas, used for current stroke
 const stroke_canvas = document.createElement('canvas');
 const stroke_ctx = stroke_canvas.getContext('2d');
+stroke_ctx.lineJoin = 'round';
+stroke_ctx.lineCap = 'round';
 
 function resize_painting() {
+    // resize display
     display_canvas.width = Math.floor(window.innerWidth);
     display_canvas.height = Math.floor(window.innerHeight);
     display_canvas.style.width = `${display_canvas.width}px`;
     display_canvas.style.height = `${display_canvas.height}px`;
-    
     padding_h = display_canvas.width > 600 ? 64 : 16;
     padding_v = display_canvas.width > 600 ? 84 : 48;
+
+    // save old state and resize main canvas
+    const image_data = main_ctx.getImageData(0, 0, main_canvas.width, main_canvas.height);
     main_canvas.width = display_canvas.width - padding_h * 2;
     main_canvas.height = display_canvas.height - padding_v * 2;
 
+    // fill with white and draw new state
     main_ctx.fillStyle = 'white';
     main_ctx.fillRect(0, 0, main_canvas.width, main_canvas.height);
+    if (!empty_canvas) { 
+        main_ctx.putImageData(image_data, 0, 0);
+        main_ctx.drawImage(stroke_canvas, 0, 0);
+    }
 
+    // also resize stroke canvas
     stroke_canvas.width = main_canvas.width;
     stroke_canvas.height = main_canvas.height;
 }
-resize_painting(); // initial size
 
 // state for drawing
+
 let points = [];
 let isDrawing = false;
 let isErasing = false;
 let isLine = false;
 let empty_canvas = true;
 
-// initial drawing
-stroke_ctx.lineWidth = 2;
-stroke_ctx.lineJoin = 'round';
-stroke_ctx.lineCap = 'round';
-
-
 // events
+
+resize_painting(); // initial size
+draw_ui(display_ctx); // initial draw
 
 window.addEventListener('resize', () => {
     resize_painting();
     draw_ui(display_ctx);
 });
+window.addEventListener('pointerdown', (e) => {
+    if (e.target.tagName === 'BUTTON') return;
 
-display_canvas.addEventListener('pointerdown', (e) => {
     points = [];
     // apply last stroke to main canvas
     main_ctx.drawImage(stroke_canvas, 0, 0);
@@ -214,6 +224,7 @@ function draw_fan(ctx) {
 
     // only draw the last points, assuming no refreshing of the canvas
     const i = points.length - 1;
+    ctx.lineWidth = 2; // 1 is not enough apparently to hide the gaps
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
     ctx.lineTo(points[i-1].x, points[i-1].y);
@@ -229,12 +240,11 @@ function draw_line(ctx) {
     const i = points.length - 1;
     const pressure = points[i].pressure || points[i-1].pressure || 0.2;
     // const randomness = 1 + Math.random() * 0.4 - 0.2; // add some randomness to the line width
-    ctx.lineWidth = pressure * 10;
+    ctx.lineWidth = pressure * 10; // default 2 if no pressure
     ctx.beginPath();
     ctx.moveTo(points[i-1].x, points[i-1].y);
     ctx.lineTo(points[i].x, points[i].y);
     ctx.stroke();
-    ctx.lineWidth = 2;
 }
 
 function draw_ui(ctx) {
@@ -245,5 +255,3 @@ function draw_ui(ctx) {
     ctx.drawImage(main_canvas, paintingX, paintingY);
     ctx.drawImage(stroke_canvas, paintingX, paintingY);
 }
-
-draw_ui(display_ctx);
