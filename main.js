@@ -24,8 +24,6 @@ const insidePainting = ({x, y}) => {return (x >= 0 && x < main_canvas.width && y
 // rendered on top of the main canvas, used for current stroke
 const stroke_canvas = document.createElement('canvas');
 const stroke_ctx = stroke_canvas.getContext('2d');
-stroke_ctx.lineJoin = 'round';
-stroke_ctx.lineCap = 'round';
 
 function resize_painting() {
     // resize display
@@ -52,6 +50,8 @@ function resize_painting() {
     // also resize stroke canvas
     stroke_canvas.width = main_canvas.width;
     stroke_canvas.height = main_canvas.height;
+    stroke_ctx.lineJoin = 'round';
+    stroke_ctx.lineCap = 'round';
 }
 
 // state for drawing
@@ -80,12 +80,9 @@ window.addEventListener('pointerdown', (e) => {
     stroke_ctx.clearRect(0, 0, stroke_canvas.width, stroke_canvas.height);
 
     isDrawing = true;
-    set_color(stroke_ctx, isErasing);
     const {x, y} = displayToPainting({x: e.clientX, y: e.clientY});
     const pressure = (e.pointerType === 'mouse') ? null : e.pressure;
     points.push(new Point(x, y, pressure));
-
-    draw_ui(display_ctx);
 });
 window.addEventListener('pointermove', (e) => {
     if (!isDrawing) return;
@@ -130,13 +127,11 @@ function pressedButton(el) {
         el.style.backgroundColor = 'white';
         el.style.color = 'black';
         isErasing = true;
-        set_color(stroke_ctx, isErasing);
     } else if (el.innerText === 'erase') {
         el.innerText = 'draw';
         el.style.backgroundColor = 'transparent';
         el.style.color = 'white';
         isErasing = false;
-        set_color(stroke_ctx, isErasing);
     } else if (el.innerText === 'lines') {
         el.innerText = 'shapes';
         el.style.backgroundColor = 'transparent';
@@ -189,34 +184,25 @@ function pressedButton(el) {
     }
 }
 
-function set_color(ctx, isErasing) {
-    if (isErasing) {
-        ctx.strokeStyle = 'white';
-        ctx.fillStyle = 'white';
-    } else {
-        ctx.strokeStyle = 'black';
-        ctx.fillStyle = 'black';
-    }
-}
-
 function draw_stroke(ctx) {
-    if (!isLine) {
-        draw_fan(ctx);
+    // const dark_hues =  ["#2b1e22", "#2b1f1f", "#2b1f1d", "#2a201b", "#29211a", "#272119", "#262219", "#23231a", "#21241a", "#1f241c", "#1d251e", "#1b2520", "#1a2523", "#1a2525", "#1a2527", "#1a2428", "#1b242a", "#1c232c", "#1e222d", "#21212c", "#24202b", "#261f2a", "#281f27", "#2a1e25"]
+    // const light_hues = ["#f1dce2", "#f2ddde", "#f1deda", "#f1ded6", "#f0dfd2", "#eee0ce", "#ebe2ca", "#e6e5c9", "#dfe7ca", "#d8e9d0", "#d2ead6", "#ceebdd", "#cbebe3", "#cbeae9", "#cde8ed", "#d1e7f0", "#d5e5f1", "#d9e4f2", "#dde2f2", "#e1e1f2", "#e5dff1", "#e9deef", "#edddeb", "#f0dce6"]
+    
+    // set color
+    if (isErasing) {
+        ctx.strokeStyle = 'white'; // light_hues[Math.floor(Math.random() * light_hues.length)];
+        ctx.fillStyle = '#fcfcfc'; // '#e2e2e2';
+    } else {
+        ctx.strokeStyle = 'black'; // dark_hues[Math.floor(Math.random() * dark_hues.length)];
+        ctx.fillStyle = '#080808'; // '#222'
+    }
+
+    // draw
+    if (isLine) {
+        draw_line(ctx);
         return;
     }
-    draw_line(ctx);
-}
-
-function draw_lasso(ctx) {
-    if (points.length < 2) return;
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for (let point of points) {
-        ctx.lineTo(point.x, point.y);
-    }
-    ctx.closePath();
-    ctx.stroke();
-    ctx.fill();
+    draw_fan(ctx);
 }
 
 function draw_fan(ctx) {
@@ -245,6 +231,18 @@ function draw_line(ctx) {
     ctx.moveTo(points[i-1].x, points[i-1].y);
     ctx.lineTo(points[i].x, points[i].y);
     ctx.stroke();
+}
+
+function draw_lasso(ctx) {
+    if (points.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let point of points) {
+        ctx.lineTo(point.x, point.y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
 }
 
 function draw_ui(ctx) {
