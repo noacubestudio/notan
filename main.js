@@ -38,7 +38,6 @@ function resize_painting() {
     const image_data = main_ctx.getImageData(0, 0, main_canvas.width, main_canvas.height);
     main_canvas.width = display_canvas.width - padding_h * 2;
     main_canvas.height = display_canvas.height - padding_v * 2;
-
     // fill with white and draw new state
     main_ctx.fillStyle = 'white';
     main_ctx.fillRect(0, 0, main_canvas.width, main_canvas.height);
@@ -47,7 +46,7 @@ function resize_painting() {
         main_ctx.drawImage(stroke_canvas, 0, 0);
     }
 
-    // also resize stroke canvas
+    // also update stroke canvas
     stroke_canvas.width = main_canvas.width;
     stroke_canvas.height = main_canvas.height;
     stroke_ctx.lineJoin = 'round';
@@ -159,10 +158,11 @@ function pressedButton(el) {
             alert('Please allow popups for this website to save the drawing.');
         }
     } else if (el.innerText === 'load') {
-        // load from png
+        // load from image file
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = 'image/png';
+        // ideally, the first one works, which covers all sorts of images. whether or not it can be drawn, at least it will be loaded...
+        input.accept = 'image/*, image/png, image/jpeg, image/gif, image/bmp, image/webp, image/heic';
         input.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -170,7 +170,6 @@ function pressedButton(el) {
             reader.onload = (event) => {
                 const img = new Image();
                 img.onload = () => {
-
                     // success
                     main_ctx.drawImage(img, 0, 0);
                     draw_ui(display_ctx);
@@ -191,10 +190,10 @@ function draw_stroke(ctx) {
     // set color
     if (isErasing) {
         ctx.strokeStyle = 'white'; // light_hues[Math.floor(Math.random() * light_hues.length)];
-        ctx.fillStyle = '#fcfcfc'; // '#e2e2e2';
+        ctx.fillStyle = 'white'; // '#fcfcfc'; // '#e2e2e2';
     } else {
         ctx.strokeStyle = 'black'; // dark_hues[Math.floor(Math.random() * dark_hues.length)];
-        ctx.fillStyle = '#080808'; // '#222'
+        ctx.fillStyle = 'black'; // '#080808'; // '#222'
     }
 
     // draw
