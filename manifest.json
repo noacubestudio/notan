@@ -1,0 +1,8 @@
+{
+    "name": "Notan Drawing",
+    "short_name": "Notan",
+    "scope": "/notan/",
+    "start_url": "/notan/",
+    "theme_color": "#864",
+    "display": "standalone"
+}

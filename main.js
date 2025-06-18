@@ -25,7 +25,7 @@ const insidePainting = ({x, y}) => {return (x >= 0 && x < main_canvas.width && y
 const stroke_canvas = document.createElement('canvas');
 const stroke_ctx = stroke_canvas.getContext('2d');
 
-function resize_painting() {
+function resize_painting(is_initial = false) {
     // resize display
     display_canvas.width = Math.floor(window.innerWidth);
     display_canvas.height = Math.floor(window.innerHeight);
@@ -41,7 +41,7 @@ function resize_painting() {
     // fill with white and draw new state
     main_ctx.fillStyle = 'white';
     main_ctx.fillRect(0, 0, main_canvas.width, main_canvas.height);
-    if (!empty_canvas) { 
+    if (!is_initial) { 
         main_ctx.putImageData(image_data, 0, 0);
         main_ctx.drawImage(stroke_canvas, 0, 0);
     }
@@ -53,18 +53,27 @@ function resize_painting() {
     stroke_ctx.lineCap = 'round';
 }
 
-// state for drawing
+// ui
+
+function draw_ui(ctx) {
+    ctx.fillStyle = '#864';
+    ctx.fillRect(0, 0, display_canvas.width, display_canvas.height);
+
+    const {x: paintingX, y: paintingY} = paintingToDisplay({x: 0, y: 0});
+    ctx.drawImage(main_canvas, paintingX, paintingY);
+    ctx.drawImage(stroke_canvas, paintingX, paintingY);
+}
+resize_painting(true); // initial size
+draw_ui(display_ctx); // initial draw
+
+
+// events
 
 let points = [];
 let isDrawing = false;
 let isErasing = false;
 let isLine = false;
 let empty_canvas = true;
-
-// events
-
-resize_painting(); // initial size
-draw_ui(display_ctx); // initial draw
 
 window.addEventListener('resize', () => {
     resize_painting();
@@ -187,6 +196,8 @@ function pressedButton(el) {
     }
 }
 
+// draw brushstrokes
+
 function draw_stroke(ctx) {
     // const dark_hues =  ["#2b1e22", "#2b1f1f", "#2b1f1d", "#2a201b", "#29211a", "#272119", "#262219", "#23231a", "#21241a", "#1f241c", "#1d251e", "#1b2520", "#1a2523", "#1a2525", "#1a2527", "#1a2428", "#1b242a", "#1c232c", "#1e222d", "#21212c", "#24202b", "#261f2a", "#281f27", "#2a1e25"]
     // const light_hues = ["#f1dce2", "#f2ddde", "#f1deda", "#f1ded6", "#f0dfd2", "#eee0ce", "#ebe2ca", "#e6e5c9", "#dfe7ca", "#d8e9d0", "#d2ead6", "#ceebdd", "#cbebe3", "#cbeae9", "#cde8ed", "#d1e7f0", "#d5e5f1", "#d9e4f2", "#dde2f2", "#e1e1f2", "#e5dff1", "#e9deef", "#edddeb", "#f0dce6"]
@@ -246,13 +257,4 @@ function draw_lasso(ctx) {
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
-}
-
-function draw_ui(ctx) {
-    ctx.fillStyle = '#864';
-    ctx.fillRect(0, 0, display_canvas.width, display_canvas.height);
-
-    const {x: paintingX, y: paintingY} = paintingToDisplay({x: 0, y: 0});
-    ctx.drawImage(main_canvas, paintingX, paintingY);
-    ctx.drawImage(stroke_canvas, paintingX, paintingY);
 }
