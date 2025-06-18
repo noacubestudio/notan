@@ -70,9 +70,13 @@ window.addEventListener('resize', () => {
     resize_painting();
     draw_ui(display_ctx);
 });
-window.addEventListener('pointerdown', (e) => {
-    if (e.target.tagName === 'BUTTON') return;
 
+const canvas_input_div = document.getElementById('canvas-input-div');
+
+// fix to allow scribble feature on iPadOS while still getting all points
+canvas_input_div.addEventListener('touchmove', (e) => { e.preventDefault(); }); 
+
+canvas_input_div.addEventListener('pointerdown', (e) => {
     points = [];
     // apply last stroke to main canvas
     main_ctx.drawImage(stroke_canvas, 0, 0);
@@ -83,7 +87,7 @@ window.addEventListener('pointerdown', (e) => {
     const pressure = (e.pointerType === 'mouse') ? null : e.pressure;
     points.push(new Point(x, y, pressure));
 });
-window.addEventListener('pointermove', (e) => {
+canvas_input_div.addEventListener('pointermove', (e) => {
     if (!isDrawing) return;
     
     // only draw the last part
